@@ -28,4 +28,43 @@ router.post('/login', async (req, res) => {
     }
 });
 
+router.post('/create-user', async (req, res) => {
+    console.log('Datos recibidos:', req.body); // Verifica los datos enviados desde el cliente
+
+    try {
+        const { name, lastname, email } = req.body;
+
+        if (!name || !lastname || !email ) {
+            console.log('Error: Campos requeridos faltantes');
+            return res.status(400).json({ error: 'Todos los campos son necesarios' });
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            console.log('Error: Formato de correo no válido');
+            return res.status(400).json({ error: 'Formato de correo no válido' });
+        }
+        let usuario = await Usuario.find({ email });
+        if (usuario.length > 0) {
+            console.log('Error: El correo ya está registrado');
+            return res.status(400).json({ error: 'El correo ya está registrado' });
+        }
+        usuario = new Usuario({ name, lastname, email });
+        await usuario.save();
+        console.log('Usuario creado exitosamente');
+
+        res.status(201).json({
+            message: 'Usuario creado exitosamente',
+            user: usuario,
+        });
+    } catch (err) {
+        console.error('Error al crear usuario:', err);
+
+        if (err.code === 11000) {
+            return res.status(400).json({ error: 'El correo ya está registrado' });
+        }
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
 module.exports = router;

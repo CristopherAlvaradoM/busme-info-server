@@ -9,6 +9,7 @@ router.post('/subscribe', async (req, res) => {
     const { userId, subscription } = req.body;
     // Validar que se recibió el objeto de suscripción correctamente
     if (!subscription || !subscription.endpoint || !subscription.keys || !subscription.keys.p256dh || !subscription.keys.auth) {
+     console.log('Error: Faltan campos necesarios en la suscripción');
       return res.status(400).json({ error: 'Faltan campos necesarios en la suscripción' });
     }
 
@@ -19,6 +20,7 @@ router.post('/subscribe', async (req, res) => {
     // Actualizar la suscripción del usuario
     user.suscripcion = subscription; // Guardar el objeto completo de la suscripción
     await user.save();
+    console.log(user)
 
     // Payload para la notificación
     const payload = {
@@ -36,6 +38,7 @@ router.post('/subscribe', async (req, res) => {
 
     res.status(201).json({ message: 'Suscripción guardada y notificación enviada exitosamente' });
   } catch (err) {
+    console.error('Error al guardar la suscripción:', err);
     res.status(400).json({ error: err.message });
   }
 });
